@@ -33,10 +33,12 @@ JOIN track t ON a.id = t.album_id
 GROUP BY a.name;
 
 -- все исполнители, которые не выпустили альбомы в 2020 году
-SELECT DISTINCT s.name FROM singer s 
-JOIN singeralbum sa  ON s.id = sa.singer_id 
-JOIN album a ON sa.album_id = a.id 
-WHERE a.production_year != 2020;
+SELECT DISTINCT name FROM singer  
+WHERE name NOT IN (
+	SELECT s.name FROM singer s
+	JOIN singeralbum sa  ON s.id = sa.singer_id 
+	JOIN album a ON sa.album_id = a.id 
+	WHERE a.production_year = 2020);
 
 -- названия сборников, в которых присутствует конкретный исполнитель
 SELECT DISTINCT c.name FROM collection c
@@ -72,4 +74,8 @@ WHERE length = (SELECT MIN(length) FROM track);
 SELECT a.name FROM album a 
 JOIN track t ON a.id = t.album_id 
 GROUP BY a.name
-HAVING COUNT(*) = 1;
+HAVING (
+	SELECT COUNT(id) FROM track 
+	GROUP BY album_id
+	ORDER BY COUNT(id)
+	LIMIT 1) = COUNT(t.id);
